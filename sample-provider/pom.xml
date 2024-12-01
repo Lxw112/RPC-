@@ -26,7 +26,7 @@
     <!-- 引入noob-rpc-easy模块 -->
     <dependency>
       <groupId>com.noob.rpc</groupId>
-      <artifactId>noob-rpc-easy</artifactId>
+      <artifactId>noob-rpc-core</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <!-- https://doc.hutool.cn/ -->

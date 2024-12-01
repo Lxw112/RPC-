@@ -4,6 +4,7 @@ import com.noob.rpc.handler.HttpRequestHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -21,9 +22,9 @@ public class NettyHttpServer implements HttpServer {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<Channel>() {
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
                                       @Override
-                                      protected void initChannel(Channel ch) throws Exception {
+                                      protected void initChannel(SocketChannel ch) throws Exception {
                                           // 管道配置：添加 HTTP 编解码器和处理请求的自定义处理器
                                           ChannelPipeline pipeline = ch.pipeline();
                                           pipeline.addLast(new HttpServerCodec()); // 编解码器

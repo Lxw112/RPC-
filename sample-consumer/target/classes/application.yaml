@@ -1,0 +1,4 @@
+rpc:
+  name: noob-rpc
+  version: 2.0
+  serverPort: 8081

@@ -3,6 +3,7 @@ package com.noob.rpc;
 import com.noob.rpc.server.HttpServer;
 import com.noob.rpc.server.NettyHttpServer;
 import com.noob.rpc.service.UserService;
+import com.noob.rpc.service.UserServiceImpl;
 
 /**
  * 服务提供者启动类，通过main方法编写提供服务的代码

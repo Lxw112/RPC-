@@ -1,0 +1,5 @@
+com\noob\rpc\HttpResponseHandler.class
+com\noob\rpc\Main.class
+com\noob\rpc\proxy\UserServiceProxy.class
+com\noob\rpc\EasyConsumerSample.class
+com\noob\rpc\proxy\UserServiceProxy$1.class
