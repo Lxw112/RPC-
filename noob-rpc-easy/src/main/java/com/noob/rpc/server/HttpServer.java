@@ -1,4 +1,4 @@
-package com.noob.rpc;
+package com.noob.rpc.server;
 
 /**
  * Http 服务器接口

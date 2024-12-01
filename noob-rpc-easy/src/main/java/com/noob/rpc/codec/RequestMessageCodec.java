@@ -1,6 +1,8 @@
-package com.noob.rpc;
+package com.noob.rpc.codec;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.noob.rpc.pojo.RpcRequest;
+import com.noob.rpc.pojo.RpcResponse;
+import com.noob.rpc.serializer.RpcJsonSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -10,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 
-public class RequestMessageCodec extends MessageToMessageCodec<ByteBuf,RpcRequest> {
+public class RequestMessageCodec extends MessageToMessageCodec<ByteBuf, RpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RpcRequest request, List<Object> list) throws Exception {
         System.out.println("准备编码");

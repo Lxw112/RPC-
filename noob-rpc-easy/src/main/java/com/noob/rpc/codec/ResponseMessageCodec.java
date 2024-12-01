@@ -1,19 +1,19 @@
-package com.noob.rpc;
+package com.noob.rpc.codec;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.noob.rpc.pojo.RpcRequest;
+import com.noob.rpc.pojo.RpcResponse;
+import com.noob.rpc.serializer.RpcJsonSerializer;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
 import io.netty.handler.codec.http.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 @Slf4j
-public class ResponseMessageCodec extends MessageToMessageCodec<ByteBuf,RpcResponse> {
+public class ResponseMessageCodec extends MessageToMessageCodec<ByteBuf, RpcResponse> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RpcResponse response, List<Object> list) throws Exception {
         ByteBuf out = ctx.alloc().buffer(1024);

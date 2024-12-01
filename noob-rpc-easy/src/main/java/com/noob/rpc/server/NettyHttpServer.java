@@ -1,17 +1,15 @@
-package com.noob.rpc;
+package com.noob.rpc.server;
 
+import com.noob.rpc.handler.HttpRequestHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
-public class NettyHttpServer implements HttpServer{
+public class NettyHttpServer implements HttpServer {
     @Override
     public void doStart(int port) {
         // 创建事件循环组

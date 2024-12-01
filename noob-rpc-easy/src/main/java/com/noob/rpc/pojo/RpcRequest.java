@@ -1,4 +1,4 @@
-package com.noob.rpc;
+package com.noob.rpc.pojo;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import lombok.AllArgsConstructor;

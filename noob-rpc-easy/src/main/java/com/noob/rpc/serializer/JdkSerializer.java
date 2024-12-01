@@ -1,4 +1,4 @@
-package com.noob.rpc;
+package com.noob.rpc.serializer;
 
 import java.io.*;
 
