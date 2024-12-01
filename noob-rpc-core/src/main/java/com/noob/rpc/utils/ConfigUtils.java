@@ -21,8 +21,8 @@ public class ConfigUtils {
      * @return
      */
     public static <T> T loadConfig(Class<T> tClass, String prefix) {
-        //return loadConfig(tClass, prefix, "");
-        return loadConfigYaml(tClass, prefix, "");
+        return loadConfig(tClass, prefix, "");
+        //return loadConfigYaml(tClass, prefix, "");
     }
 
     /**
