@@ -2,10 +2,12 @@ package com.noob.rpc.proxy;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.noob.rpc.RpcApplication;
 import com.noob.rpc.pojo.RpcRequest;
 import com.noob.rpc.pojo.RpcResponse;
 import com.noob.rpc.serializer.JdkSerializer;
 import com.noob.rpc.serializer.Serializer;
+import com.noob.rpc.serializer.SerializerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -17,8 +19,12 @@ import java.lang.reflect.Method;
 public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        // 指定序列化器
-        Serializer serializer = new JdkSerializer();
+        // 硬编码方式：指定序列化器
+        //final Serializer serializer = new JdkSerializer();
+
+
+        // 方式2：动态获取序列化器
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         // 构造请求
         RpcRequest rpcRequest = RpcRequest.builder()
@@ -32,7 +38,7 @@ public class ServiceProxy implements InvocationHandler {
             byte[] bodyBytes = serializer.serialize(rpcRequest);
             // 发送请求
             // todo 注意，这里地址被硬编码了（需要使用注册中心和服务发现机制解决）
-            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8080")
+            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8081")
                     .body(bodyBytes)
                     .execute()) {
                 byte[] result = httpResponse.bodyBytes();

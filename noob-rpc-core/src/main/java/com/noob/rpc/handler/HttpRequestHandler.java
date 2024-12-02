@@ -1,10 +1,12 @@
 package com.noob.rpc.handler;
 
 import com.noob.rpc.LocalRegistry;
+import com.noob.rpc.RpcApplication;
 import com.noob.rpc.pojo.RpcRequest;
 import com.noob.rpc.pojo.RpcResponse;
 import com.noob.rpc.serializer.JdkSerializer;
 import com.noob.rpc.serializer.Serializer;
+import com.noob.rpc.serializer.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,8 +26,13 @@ public class HttpRequestHandler<F> extends SimpleChannelInboundHandler<FullHttpR
     @Override
 
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        // 指定jdk序列化器
-        final Serializer serializer = new JdkSerializer();
+        // 硬编码方式：指定序列化器
+        //final Serializer serializer = new JdkSerializer();
+
+
+        // 方式2：动态获取序列化器
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+
 
         // 记录日志
         System.out.println("接收到请求: " + request.headers() + " " + request.getUri());
