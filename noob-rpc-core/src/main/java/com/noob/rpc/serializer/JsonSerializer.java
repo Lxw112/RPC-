@@ -1,7 +1,7 @@
 package com.noob.rpc.serializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.noob.rpc.pojo.RpcRequest;
+import com.noob.rpc.model.RpcRequest;
 import com.noob.rpc.pojo.RpcResponse;
 
 import java.io.IOException;

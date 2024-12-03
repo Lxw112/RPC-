@@ -1,5 +1,6 @@
-package com.noob.rpc.pojo;
+package com.noob.rpc.model;
 
+import com.noob.rpc.constant.RpcConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,5 +36,10 @@ public class RpcRequest implements Serializable {
      * 参数列表
      */
     private Object[] args;
+
+    /**
+     * 服务版本
+     */
+    private String serviceVersion = RpcConstant.DEFAULT_SERVICE_VERSION;
 
 }

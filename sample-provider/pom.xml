@@ -23,7 +23,7 @@
       <artifactId>sample-common</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
-    <!-- 引入noob-rpc-easy模块 -->
+    <!-- 引入noob-rpc-core模块 -->
     <dependency>
       <groupId>com.noob.rpc</groupId>
       <artifactId>noob-rpc-core</artifactId>
@@ -43,11 +43,11 @@
       <scope>provided</scope>
     </dependency>
 <!--    引入netty-->
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>4.1.39.Final</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.netty</groupId>-->
+<!--      <artifactId>netty-all</artifactId>-->
+<!--      <version>4.1.39.Final</version>-->
+<!--    </dependency>-->
   </dependencies>
 
   <build>

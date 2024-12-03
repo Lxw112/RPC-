@@ -1,4 +1,4 @@
-package com.noob.rpc;
+package com.noob.rpc.registry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

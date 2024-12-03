@@ -4,7 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.noob.rpc.HttpResponseHandler;
 import com.noob.rpc.entity.User;
-import com.noob.rpc.pojo.RpcRequest;
+import com.noob.rpc.model.RpcRequest;
 import com.noob.rpc.pojo.RpcResponse;
 import com.noob.rpc.serializer.JdkSerializer;
 import com.noob.rpc.serializer.Serializer;

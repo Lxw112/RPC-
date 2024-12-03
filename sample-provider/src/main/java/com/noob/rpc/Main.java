@@ -1,5 +1,6 @@
 package com.noob.rpc;
 
+import com.noob.rpc.registry.LocalRegistry;
 import com.noob.rpc.server.HttpServer;
 import com.noob.rpc.server.NettyHttpServer;
 import com.noob.rpc.service.UserService;

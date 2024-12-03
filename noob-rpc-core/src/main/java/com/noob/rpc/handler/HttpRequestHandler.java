@@ -1,10 +1,9 @@
 package com.noob.rpc.handler;
 
-import com.noob.rpc.LocalRegistry;
+import com.noob.rpc.registry.LocalRegistry;
 import com.noob.rpc.RpcApplication;
-import com.noob.rpc.pojo.RpcRequest;
+import com.noob.rpc.model.RpcRequest;
 import com.noob.rpc.pojo.RpcResponse;
-import com.noob.rpc.serializer.JdkSerializer;
 import com.noob.rpc.serializer.Serializer;
 import com.noob.rpc.serializer.SerializerFactory;
 import io.netty.buffer.ByteBuf;
@@ -52,7 +51,11 @@ public class HttpRequestHandler<F> extends SimpleChannelInboundHandler<FullHttpR
         RpcRequest rpcRequest = null;
 
         try {
-            rpcRequest = serializer.deserialize(bytes, RpcRequest.class);
+            try {
+                rpcRequest = serializer.deserialize(bytes, RpcRequest.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             System.out.println("转换完成的："+rpcRequest);
         } catch (Exception e) {
             RpcResponse rpcResponse = new RpcResponse();
