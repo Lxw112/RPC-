@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/21660df9-4eca-4edc-a765-1f44691a511c)一、静态代理实现
+![image](https://github.com/user-attachments/assets/21660df9-4eca-4edc-a765-1f44691a511c)
+#一、静态代理实现
 ​ 静态代理是指为每一个特定类型的接口或者对象提供一个代理类进行代理操作，此处创建UserServiceProxy，实现代理方法。
 
 ​ 此处代理方法的实现，不是直接复制那段UserServicelmpl相关的代码，而是通过Http请求去调用接口服务（此处需注意参数的序列化处理）
@@ -11,14 +12,14 @@
 
 【3】修改调用方法：将UserService实现交由UserServiceProxy代理处理
 总结：静态代理其实就是变相实现UserService接口，只不过其代理操作核心是通过http调用对应的服务接口。但是基于这种方式，如果后续有多个接口需要调用，则需要相应编写不同的代理类，这种代理方式的灵活性会非常差，因此引入动态代理进行构建
-二、动态代理实现
+#二、动态代理实现
 ​ 动态代理的作用：根据要生成的对象的类型，自动生成一个代理对象。此处使用JDK动态代理实现
 ​ 常用的动态代理实现方式有JDK动态代理和基于字节码生成的动态代理(比如CGLIB)。前者简单易用、无需引入额外的库，但缺点是只能对接口进行代理；后者更灵活、可以对任何类进行代理，但性能略低于JDK动态代理。
 构建步骤说明：
 【1】在noob-easy-rpc模块中编写动态代理类ServiceProxy（实现InvocationHandler的invoke方法，此处对比静态代理的实现内容基本大同小异）
 【2】使用工厂设计模式，简化对象创建过程
 【3】在sample-consumer中EasyConsumerSample修改代理模式
-三、全局配置加载
+#三、全局配置加载
 维护全局配置对象
 ​ RPC框架中需要维护一个全局的配置对象。在引入RPC框架的项目启动时，从配置文件中读取配置并创建对象实例，之后就可以集中地从这个对象中获取配置信息，而不用每次加载配置时再重新读取配置、并创建新的对象，减少了性能开销。
 ​ 使用设计模式中的单例模式，就能够很轻松地实现这个需求了。一般情况下，使用holder来维护全局配置对象实例。项目中，可以使用RpcApplication类作为RPC项目的启动入口、并且维护项目全局用到的变量。
@@ -26,7 +27,7 @@ RpcApplication
 ​ 双检锁单例模式实现：支持在获取配置时才调用init方法实现懒加载。可支持传入配置对象，如果不传入默认引入ConfigUtils来加载配置，基于这种设计只需要一行代码即可加载配置
 RpcConfig rpc = RpcApplication.getRpcConfig();
 ---实现了支持读取application.yaml格式的配置文件
-四、接口Mock实现
+#四、接口Mock实现
 1】Mock概念引入：类似模拟数据（针对一些开发场景下无法调通服务的情况，提供一些模拟服务响应数据模拟远程服务行为，便于开发流程调通）
 【2】Mock实现：设定mock属性（确认框架是否开启mock模式），通过代理模式构建MockService
 RPC框架的核心功能是调用其他远程服务。但是在实际开发和测试过程中，有时可能无法直接访问真实的远程服务，或者访问真实的远程服务可能会产生不可控的影响，例如网络延迟、服务不稳定等。在这种情况下，就需要使用mock服务来模拟远程服务的行为，以便进行接口的测试、开发和调试。
@@ -40,7 +41,7 @@ RPC框架的核心功能是调用其他远程服务。但是在实际开发和�
 【3】在proxy包下新增MockServiceProxyFactory代理服务工厂，提供获取mock代理对象的方法getMockProxy
 ​ （此处针对mock的动态代理实现，为了避免可service服务相关的代理实现混淆，此处单独将mock抽出来一套）
 【4】修改proxy下ServiceProxyFactory代理逻辑，补充验证mock参数以确认是否调用mock服务
-五、序列化器与SPI机制
+#五、序列化器与SPI机制
 SPI机制：SPI (Service Provider Interface)服务提供接口是Java的机制，主要用于实现模块化开发和插件化扩展。
 ​SPI机制允许服务提供者通过特定的配置文件将自己的实现注册到系统中，然后系统通过反射机制动态加载这些实现，而不需要修改原始框架的代码，从而实现了系统的解耦、提高了可扩展性。
 SPI的实现分为系统实现和自定义实现。
@@ -57,7 +58,7 @@ jdk=com.noob.rpc.serializer.JdkSerializer
 hessian=com.noob.rpc.serializer.HessianSerializer
 json=com.noob.rpc.serializer.JsonSerializer
 kryo=com.noob.rpc.serializer.KryoSerializer
-六、注册中心实现和优化
+#六、注册中心实现和优化
 【1】服务提供方根据配置将服务注册到注册中心
 【2】服务调用方根据配置查询注册中心对应服务的注册信息，随后根据获取到的请求地址进行服务调用
 构建步骤说明
@@ -121,7 +122,7 @@ image-20240414124819324
 【1】在Registry新增watch监听方法定义
 【2】在Etcd中实现监听方法，定义监听key集合（维护监听列表）并实现监听逻辑
 【3】EtcdRegistry中修改服务发现逻辑（添加监听：调用watch方法）
-七、自定义协议实现
+#七、自定义协议实现
 实现步骤
 构建步骤说明
 【1】新建protocol包，存放所有和自定义协议相关的代码（协议消息类ProtocolMessage、协议常量类ProtocolConstant、消息字段枚举类ProtocolMessageStatusEnum、消息类型枚举ProtocolMessageTypeEnum、序列化器枚举ProtocolMessageSerializerEnum）
@@ -141,7 +142,7 @@ ProtocolMessageSerializerEnum
 ​ 基于上面的实现中，Netty的TCP服务器收发的消息是ByteBuf类型，不能直接写入一个对象。因此，需要自定义一个编码器和解码器，将Java的消息对象和ByteBuf进行相互转换。
 ​ http请求响应处理：从body处理器中获取到body字节数组，再通过序列化（反序列化）得到RpcRequest/RpcResponse对象。使用TCP服务器后调整为从ByteBuf中获取字节数组，然后再转码为RpcRequest/RpcResponse对象（相关处理流程都是可以复用的）
 【4】添加请求处理器和响应处理器
-八、负载均衡（服务消费端）
+#八、负载均衡（服务消费端）
 1.多种负载均衡器的实现
 负载均衡器通用接口
 ​编写负载均衡器通用接口：提供一个选择服务方法，接受请求参数和可用服务列表，可以根据这些信息进行选择
