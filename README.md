@@ -121,3 +121,23 @@ image-20240414124819324
 【1】在Registry新增watch监听方法定义
 【2】在Etcd中实现监听方法，定义监听key集合（维护监听列表）并实现监听逻辑
 【3】EtcdRegistry中修改服务发现逻辑（添加监听：调用watch方法）
+七、自定义协议实现
+实现步骤
+构建步骤说明
+【1】新建protocol包，存放所有和自定义协议相关的代码（协议消息类ProtocolMessage、协议常量类ProtocolConstant、消息字段枚举类ProtocolMessageStatusEnum、消息类型枚举ProtocolMessageTypeEnum、序列化器枚举ProtocolMessageSerializerEnum）
+【2】网络传输相关：server.tcp包
+ProtocolMessage
+​ProtocolMessage：将消息头单独封装为一个内部类，消息体可以使用泛型类型
+ProtocolConstant
+​ProtocolConstant：记录了和自定义协议有关的关键信息，例如消息头、魔数、版本号信息等
+ProtocolMessageStatusEnum
+​ProtocolMessageStatusEnum：消息字段枚举类相关：协议状态枚举（暂定成功、请求失败、响应失败）
+ProtocolMessageTypeEnum
+​ProtocolMessageTypeEnum：协议消息类型枚举（请求、响应、心跳、其他等）
+ProtocolMessageSerializerEnum
+​ProtocolMessageSerializerEnum：序列化器枚举（和RPC框架支持的序列化器对应）
+在server.tcp包下重新写NettyTcpServer和NettyTcpClient类，将之前的服务提供者（Netty）-----服务消费者（发送http请求）改为服务提供者（Netty）-------服务消费者（Netty）
+【3】.编码器和解码器
+​ 基于上面的实现中，Netty的TCP服务器收发的消息是ByteBuf类型，不能直接写入一个对象。因此，需要自定义一个编码器和解码器，将Java的消息对象和ByteBuf进行相互转换。
+​ http请求响应处理：从body处理器中获取到body字节数组，再通过序列化（反序列化）得到RpcRequest/RpcResponse对象。使用TCP服务器后调整为从ByteBuf中获取字节数组，然后再转码为RpcRequest/RpcResponse对象（相关处理流程都是可以复用的）
+【4】添加请求处理器和响应处理器
