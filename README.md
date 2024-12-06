@@ -164,3 +164,188 @@ ProtocolMessageSerializerEnum
 （4）为RpcConfig全局配置新增负载默认负载均衡器配置
 3.应用负载均衡器（服务消费方）
 ​修改ServiceProxy代码，将原有“固定调用第一个服务节点”调整为“调用负载均衡器获取一个服务节点”
+# 九、重试机制（服务消费端）
+## 1.重试策略
+fault.retry包存储重试机制相关内容：
+【1】编写重试策略通用接口：RetryStrategy
+【2】编写不同重试策略：不重试策略、固定重试间隔策略
+【3】重试测试：RetryStrategyTest（单元测试，验证不同的重试策略）
+【4】SPI+工厂实现支持配置和扩展重试策略，并结合项目引用
+重试策略设计
+noob-rpc-core:pom.xml
+<!-- 引入重试库 https://github.com/rholder/guava-retrying -->
+        <dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+RetryStrategy：重试策略接口
+/**
+ * 重试策略
+ */
+public interface RetryStrategy {
+
+    /**
+     * 重试
+     *
+     * @param callable
+     * @return
+     * @throws Exception
+     */
+    RpcResponse doRetry(Callable<RpcResponse> callable) throws Exception;
+}
+NoRetryStrategy：不重试策略
+
+/**
+ * 不重试 - 重试策略
+ */
+@Slf4j
+public class NoRetryStrategy implements RetryStrategy {
+
+    /**
+     * 重试
+     * @param callable
+     * @return
+     * @throws Exception
+     */
+    public RpcResponse doRetry(Callable<RpcResponse> callable) throws Exception {
+        return callable.call();
+    }
+
+}
+FixedIntervalRetryStrategy：固定时间间隔重试策略
+/**
+ * 固定时间间隔 - 重试策略
+ */
+@Slf4j
+public class FixedIntervalRetryStrategy implements RetryStrategy {
+
+    /**
+     * 重试
+     *
+     * @param callable
+     * @return
+     * @throws ExecutionException
+     * @throws RetryException
+     */
+    public RpcResponse doRetry(Callable<RpcResponse> callable) throws ExecutionException, RetryException {
+        Retryer<RpcResponse> retryer = RetryerBuilder.<RpcResponse>newBuilder()
+                .retryIfExceptionOfType(Exception.class)
+                .withWaitStrategy(WaitStrategies.fixedWait(3L, TimeUnit.SECONDS))
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .withRetryListener(new RetryListener() {
+                    @Override
+                    public <V> void onRetry(Attempt<V> attempt) {
+                        log.info("重试次数 {}", attempt.getAttemptNumber());
+                    }
+                })
+                .build();
+        return retryer.call(callable);
+    }
+}
+重试条件：使用retrylfExceptionOfType方法指定当出现Exception异常时重试
+重试等待策略：使用withWaitStrategy方法指定策略，选择fixedWait固定时间间隔策略
+重试停止策略：使用withStopStrategy方法指定策略,选择stopAfterAttempt超过最大重试次数停止
+重试工作：使用withRetryListener监听重试，每次重试时，除了再次执行任务外，还能够打印当前的重试次数
+RetryStrategyTest：重试策略测试
+
+/**
+ * 重试策略测试
+ */
+public class RetryStrategyTest {
+
+    // 指定重试策略进行测试
+//    RetryStrategy retryStrategy = new NoRetryStrategy();
+    RetryStrategy retryStrategy = new FixedIntervalRetryStrategy();
+
+    @Test
+    public void doRetry() {
+        try {
+            RpcResponse rpcResponse = retryStrategy.doRetry(() -> {
+                System.out.println("测试重试");
+                throw new RuntimeException("模拟重试失败");
+            });
+            System.out.println(rpcResponse);
+        } catch (Exception e) {
+            System.out.println("重试多次失败");
+            e.printStackTrace();
+        }
+    }
+}
+![image](https://github.com/user-attachments/assets/1e88e2ba-3426-423d-a2cb-db2581e13e01)
+
+## 2.支持配置和扩展重试策略
+​参考序列化器、注册中心、负载均衡的配置和扩展实现，基于SPI机制和工厂模式进行构建
+【1】RetryStrategyKeys：存储重试策略常量
+【2】RetryStrategyFactory：重试策略工厂（SPI加载）
+【3】定义SPI配置文件：在resource/META-INF/rpc/system新建SPI配置文件（配置对应的重试策略）
+【4】RpcConfig中新增重试策略配置字段：retryStrategy
+RetryStrategyKeys
+
+/**
+ * 重试策略键名常量
+ */
+public interface RetryStrategyKeys {
+
+    /**
+     * 不重试
+     */
+    String NO = "no";
+
+    /**
+     * 固定时间间隔
+     */
+    String FIXED_INTERVAL = "fixedInterval";
+
+}
+RetryStrategyFactory
+
+/**
+ * 重试策略工厂（用于获取重试器对象）
+ */
+public class RetryStrategyFactory {
+
+    static {
+        SpiLoader.load(RetryStrategy.class);
+    }
+
+    /**
+     * 默认重试器
+     */
+    private static final RetryStrategy DEFAULT_RETRY_STRATEGY = new NoRetryStrategy();
+
+    /**
+     * 获取实例
+     *
+     * @param key
+     * @return
+     */
+    public static RetryStrategy getInstance(String key) {
+        return SpiLoader.getInstance(RetryStrategy.class, key);
+    }
+
+}
+SPI配置文件
+
+# SPI配置文件名称
+com.noob.rpc.fault.retry.RetryStrategy
+
+# SPI配置文件内容
+no=com.noob.rpc.fault.retry.NoRetryStrategy
+fixedInterval=com.noob.rpc.fault.retry.FixedIntervalRetryStrategy
+![image](https://github.com/user-attachments/assets/70b99f0c-df82-4c22-be0b-c7d2addf687e)
+RpcConfig
+
+@Data
+public class RpcConfig {
+    /**
+     * 重试策略配置
+     */
+    private String retryStrategy = RetryStrategyKeys.NO;
+
+}
+相应的服务消费方的application.properties中配置重试策略
+rpc.retryStrategy=fixedInterval
+应用重试功能
+​修改ServiceProxy逻辑，从工厂中获取重试器，将请求封装为一个Callable接口，作为重试器的参数，随后调用重试器
+![image](https://github.com/user-attachments/assets/bf469b3b-d45d-42ed-b7e3-ce91801b3998)
