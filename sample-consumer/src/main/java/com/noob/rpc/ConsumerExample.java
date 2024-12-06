@@ -18,8 +18,10 @@ public class ConsumerExample {
         // 获取代理
         UserService userService = ServiceProxyFactory.getProxy(UserService.class);
         User user = new User("Tom");
+
         // 调用
         User newUser = userService.getUser(user);
+
         if (newUser != null) {
             System.out.println(newUser.getName());
         } else {

@@ -9,6 +9,7 @@ import com.noob.rpc.registry.LocalRegistry;
 import com.noob.rpc.registry.Registry;
 import com.noob.rpc.registry.RegistryFactory;
 import com.noob.rpc.server.NettyHttpServer;
+import com.noob.rpc.server.tcp.NettyTcpServer;
 
 import java.util.List;
 
@@ -28,7 +29,8 @@ public class ProviderBootstrap {
         final RpcConfig rpcConfig = RpcApplication.getRpcConfig();
 
         // 注册服务
-        NettyHttpServer nettyHttpServer = new NettyHttpServer();
+        //NettyHttpServer nettyHttpServer = new NettyHttpServer();
+        NettyTcpServer nettyTcpServer = new NettyTcpServer();
         for (ServiceRegisterInfo<?> serviceRegisterInfo : serviceRegisterInfoList) {
             String serviceName = serviceRegisterInfo.getServiceName();
             // 本地注册
@@ -49,6 +51,6 @@ public class ProviderBootstrap {
         }
 
         // 启动服务器
-        nettyHttpServer.doStart(rpcConfig.getServerPort());
+        nettyTcpServer.doStart(rpcConfig.getServerPort());
     }
 }

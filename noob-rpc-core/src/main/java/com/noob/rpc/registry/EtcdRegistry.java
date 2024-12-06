@@ -58,7 +58,7 @@ public class EtcdRegistry implements Registry{
         //创建 lease 和KV客户端
         Lease leaseClient = client.getLeaseClient();
         //创建一个30秒的租约
-        long leaseId = leaseClient.grant(300).get().getID();
+        long leaseId = leaseClient.grant(600).get().getID();
         //设置要存储的键值对
         String registerKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
         ByteSequence key = ByteSequence.from(registerKey, StandardCharsets.UTF_8);
@@ -82,6 +82,7 @@ public class EtcdRegistry implements Registry{
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
         //优先从缓存获取服务
         List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache();
+        //System.out.println("-----------------"+cachedServiceMetaInfoList);
         if (cachedServiceMetaInfoList != null) {
             return cachedServiceMetaInfoList;
         }
@@ -181,6 +182,7 @@ public class EtcdRegistry implements Registry{
                         //key 删除时触发
                         case DELETE:
                             //清理注册服务缓存
+                            System.out.println("现在删除缓存");
                             registryServiceCache.clearCache();
                             break;
                         case PUT:
