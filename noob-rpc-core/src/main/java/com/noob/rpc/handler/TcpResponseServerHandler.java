@@ -24,7 +24,7 @@ public class TcpResponseServerHandler extends SimpleChannelInboundHandler<Protoc
             if (exceptionValue != null){
                 promise.setFailure(exceptionValue);
             }else {
-                promise.setSuccess(response.getData());
+                promise.setSuccess(response);
             }
         }
     }

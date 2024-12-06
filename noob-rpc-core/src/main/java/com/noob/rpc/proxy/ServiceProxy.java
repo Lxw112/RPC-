@@ -7,6 +7,8 @@ import cn.hutool.http.HttpResponse;
 import com.noob.rpc.RpcApplication;
 import com.noob.rpc.config.RpcConfig;
 import com.noob.rpc.constant.RpcConstant;
+import com.noob.rpc.fault.retry.RetryStrategy;
+import com.noob.rpc.fault.retry.RetryStrategyFactory;
 import com.noob.rpc.handler.TcpResponseServerHandler;
 import com.noob.rpc.loadbalancer.LoadBalancer;
 import com.noob.rpc.loadbalancer.LoadBalancerFactory;
@@ -92,6 +94,15 @@ public class ServiceProxy implements InvocationHandler {
         // 发送请求
         Channel channel = NettyTcpClient.getChannel(selectedServiceMetaInfo.getServiceHost(), selectedServiceMetaInfo.getServicePort());
         System.out.println("------------准备发送请求");
+        //发送请求方式：扩展实现，使用重试机制发送TCP请求
+        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+        RpcResponse rpcResponse = retryStrategy.doRetry(() ->
+                responseResult(rpcConfig, channel, protocolMessage, header)
+        );
+        return rpcResponse.getData();
+    }
+
+    private static RpcResponse responseResult(RpcConfig rpcConfig, Channel channel, ProtocolMessage<RpcRequest> protocolMessage, ProtocolMessage.Header header) throws InterruptedException {
         channel.writeAndFlush(protocolMessage);
         //3.准备一个promise对象，来接收结果                  指定promise对象异步接收结果的线程
         DefaultPromise<Object> promise = new DefaultPromise<>(channel.eventLoop());
@@ -104,10 +115,11 @@ public class ServiceProxy implements InvocationHandler {
         promise.await();
         if (promise.isSuccess()) {
             //调用正常
-            return promise.getNow();
+            return (RpcResponse)promise.getNow();
         } else {
             //调用失败
             throw new RuntimeException(promise.cause());
         }
     }
+
 }
