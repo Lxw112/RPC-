@@ -327,10 +327,10 @@ public class RetryStrategyFactory {
 }
 SPI配置文件
 
-# SPI配置文件名称
+SPI配置文件名称
 com.noob.rpc.fault.retry.RetryStrategy
 
-# SPI配置文件内容
+SPI配置文件内容
 no=com.noob.rpc.fault.retry.NoRetryStrategy
 fixedInterval=com.noob.rpc.fault.retry.FixedIntervalRetryStrategy
 ![image](https://github.com/user-attachments/assets/70b99f0c-df82-4c22-be0b-c7d2addf687e)
