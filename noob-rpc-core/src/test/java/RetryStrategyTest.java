@@ -10,8 +10,8 @@ import org.junit.Test;
 public class RetryStrategyTest {
 
     // 指定重试策略进行测试
-   RetryStrategy retryStrategy = new NoRetryStrategy();
-    //RetryStrategy retryStrategy = new FixedIntervalRetryStrategy();
+   //RetryStrategy retryStrategy = new NoRetryStrategy();
+    RetryStrategy retryStrategy = new FixedIntervalRetryStrategy();
 
     @Test
     public void doRetry() {

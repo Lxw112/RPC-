@@ -9,6 +9,8 @@ import com.noob.rpc.config.RpcConfig;
 import com.noob.rpc.constant.RpcConstant;
 import com.noob.rpc.fault.retry.RetryStrategy;
 import com.noob.rpc.fault.retry.RetryStrategyFactory;
+import com.noob.rpc.fault.tolerant.TolerantStrategy;
+import com.noob.rpc.fault.tolerant.TolerantStrategyFactory;
 import com.noob.rpc.handler.TcpResponseServerHandler;
 import com.noob.rpc.loadbalancer.LoadBalancer;
 import com.noob.rpc.loadbalancer.LoadBalancerFactory;
@@ -94,11 +96,18 @@ public class ServiceProxy implements InvocationHandler {
         // 发送请求
         Channel channel = NettyTcpClient.getChannel(selectedServiceMetaInfo.getServiceHost(), selectedServiceMetaInfo.getServicePort());
         System.out.println("------------准备发送请求");
-        //发送请求方式：扩展实现，使用重试机制发送TCP请求
-        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
-        RpcResponse rpcResponse = retryStrategy.doRetry(() ->
-                responseResult(rpcConfig, channel, protocolMessage, header)
-        );
+        //发送请求方式：扩展实现，使用重试机制、容错机制发送TCP请求
+        RpcResponse rpcResponse;
+        try {
+            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+            rpcResponse = retryStrategy.doRetry(() ->
+                    responseResult(rpcConfig, channel, protocolMessage, header)
+            );
+        } catch (Exception e) {
+            //容错机制
+            TolerantStrategy tolerantStrategy = TolerantStrategyFactory.getInstance(rpcConfig.getTolerantStrategy());
+            rpcResponse = tolerantStrategy.doTolerant(null,e);
+        }
         return rpcResponse.getData();
     }
 
