@@ -41,7 +41,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
-            <scope>provided</scope>
         </dependency>
         <!-- 引入重试库 https://github.com/rholder/guava-retrying -->
         <dependency>
