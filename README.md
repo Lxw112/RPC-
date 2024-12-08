@@ -415,7 +415,87 @@ FailBackTolerantStrategy：故障恢复策略
 ## 容错策略应用
 ​ 修改ServiceProxy请求处理操作，在异常处理的时候引入容错机制
 ![image](https://github.com/user-attachments/assets/dc68acc2-c923-4b61-89f1-ae85fa17c1a5)
+# 十一、完成注解驱动
+为了避免和原有代码混淆，此处单独使用springboot构建新的服务提供者、服务消费者进行构建
+## Springboot Starter项目初始化
+​ 新建Module（noob-rpc-springboot-starter）=》选择Springboot（Spring Initializr）=》修改Server URL（start.aliyun.com）=》JDK版本（按需选择）
+image-20240415102632687image-20240415102958979
+​ 选择springboot-2.6.13版本，选择依赖Spring Configuration Processor，创建项目等待依赖加载（配置maven仓库）
+image-20240415103131830
+​ 清理一些无用的依赖内容，引入开发好的rpc框架（noob-rpc-core）
+        <!-- 引入rpc框架 -->
+        <dependency>
+            <groupId>com.noob.rpc</groupId>
+            <artifactId>noob-rpc-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+## 定义注解
+可参考Dubbo的注解配置
+【1】@EnableDubbo:在 Spring Boot 主应用类上使用，用于启用 Dubbo 功能
+【2】@DubboComponentScan:在 Spring Boot 主应用类上使用，用于指定 Dubbo 组件扫描的包路径
+【3】@DubboReference:在消费者中使用，用于声明 Dubbo 服务引用
+【4】@DubboService:在提供者中使用，用于声明 Dubbo 服务。
+【5】@DubboMethod:在提供者和消费者中使用，用于配置 Dubbo 方法的参数、超时时间等
+【6】@DubboTransported:在 Dubbo 提供者和消费者中使用，用于指定传输协议和参数，例如传输协议的类型、端口等。
+​ 此处构建基础可定义3个核心注解（调通调用流程）：@EnableRpc、@RpcReference、@RpcService
+@EnableRpc：用于全局标识项目需要引入RPC框架，执行初始化方法
+@RpcService：服务提供者注解，在需要注册和提供服务的类上使用
+@RpcReference：服务消费者注解，在需要注入服务代理对象的属性上使用
+@EnableRpc
+​ 考虑到消费者、提供者启动提供的初始化模块不同，因此需要在注解中指定是否需要启动web服务器。或者可以考虑将EnableRpc拆分为两个注解分别对应标识服务提供者EnableRpcProvider和服务消费者EnableRpcConsumer（但这种情况可能存在模块重复初始化的可能性）
+@RpcService
+​ 服务提供者注解：RpcService 注解中，需要指定服务注册信息属性，比如服务接口实现类、版本号等(也可以包括服务名称)
+@RpcReference
+​ 服务消费者注解：在需要注入服务代理对象的属性上使用，类似 Spring 中的 @Resource 注解 ​ RpcReference 注解中，需要指定调用服务相关的属性，比如服务接口类(可能存在多个接口)、版本号、负载均衡器、重试策略、是否 Mock 模拟调用等。
+## 实现说明
+​ 在starter项目中新建bootstrap包，分别针对上述3个注解新建启动类
+### RpcInitBootstrap：RPC框架全局启动类
+​ 在Spring框架初始化时，获取@EnableRpc注解的属性，并初始化RPC框架。可以通过实现Spring的ImportBeanDefinitionRegistrar接口，并在registerBeanDefinitions方法中获取到项目的注解和注解属性
+![image](https://github.com/user-attachments/assets/6bb244d2-8d57-4055-839c-62c52e61a6a1)
+注意！！！在启动netty服务器时，需重开一个线程来启动，否则会阻塞主线程，导致后续的注册操作无法完成，在之前没这个问题是因为完成所有准备工作后最后一步才启动netty服务器！！！
+参考上述代码实现，从@EnableRpc注解中获取到needServer属性，从而决定是否要启动web服务器
+### RpcProviderBootstrap：RPC服务提供者启动类
+​ 服务提供者启动类的作用是，获取到所有包含 @RpcSenice 注解的类，并且通过注解的属性和反射机制，获取到要注册的服务信息，并且完成服务注册。
+​ 怎么获取到所有包含 @Rpcservice 注解的类呢？可以主动扫描包，也可以利用 Spring 的特性监听 Bean 的加载
+​ 此处选择后者，实现更简单，而且能直接获取到服务提供者类的 Bean 对象，只需要让启动类实现 BeanPostProcessor 接口的 postProcessAfterinitialization 方法，就可以在某个服务提供者 Bean 初始化后，执行注册服务等操作了。
+![image](https://github.com/user-attachments/assets/f1a752db-cf33-4314-ad26-b5b0c656732d)
+![image](https://github.com/user-attachments/assets/c2d820d0-e5f4-49ba-9838-b0d17de6965a)
+### RpcConsumerBootstrap：RPC服务消费者启动类
+​ 和服务提供者启动类的实现方式类似，在 Bean 初始化后，通过反射获取到 Bean 的所有属性，如果属性包含@RpcReference 注解，那么就为该属性动态生成代理对象并赋值。
+![image](https://github.com/user-attachments/assets/2305b76a-18e4-47f3-ab1f-ce28769cb3a9)
+## 注册启动类
+​ 在Spring中加载已经编写好的启动类。
+​ 构建说明：在用户使用@EnableRpc注解时才启动RPC框架，可以通过给EnableRpc增加@Import注解，注册自定义的启动类，实现灵活的可选加载
+![image](https://github.com/user-attachments/assets/3653abd5-e413-40ba-9a62-edb1f69283dc)
+## 测试
+​ 构建两个springboot项目测试基于注解驱动的RPC框架
+sample-springboot-provider：服务提供者
+sample-springboot-consumer：服务消费者
+<!-- 引入公共模块 -->
+        <dependency>
+            <groupId>com.noob.rpc</groupId>
+            <artifactId>sample-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
+        <!-- 引入RPC框架相关 -->
+        <dependency>
+            <groupId>com.noob.rpc</groupId>
+            <artifactId>noob-rpc-springboot-starter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+### sample-springboot-provider
+​ 在服务提供者项目启动类上添加@EnableRpc注解
+![image](https://github.com/user-attachments/assets/7c402f46-514d-4db7-8ec5-d8e4f1a6d9a6)
+​ 提供一个简单的服务实例
+![image](https://github.com/user-attachments/assets/bf27485b-4d54-4886-8d83-d05615e8b8c8)
+### sample-springboot-consumer
+​ 在服务消费者项目启动类上添加@EnableRpc注解（指定needServer属性为false）
+![image](https://github.com/user-attachments/assets/b5716738-5fe9-4a5a-af4c-8545418d3e4d)
+### 提供方法供测试
+![image](https://github.com/user-attachments/assets/7fb83a75-e202-4e29-9873-8a442af9c788)
+编写测试用例进行测试：先后启动提供者启动类、消费者启动类、执行单元测试方法（此处需注意用例方法提示错误则可能需要手动指定启动类（手动指定了启动类之后则不用单独启动指定的启动类，单元测试会自动装配））
+![image](https://github.com/user-attachments/assets/f4343c14-1977-46e2-a96a-b9b1c8c3a766)
 
 
 
