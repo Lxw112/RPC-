@@ -496,7 +496,8 @@ sample-springboot-consumer：服务消费者
 ![image](https://github.com/user-attachments/assets/7fb83a75-e202-4e29-9873-8a442af9c788)
 编写测试用例进行测试：先后启动提供者启动类、消费者启动类、执行单元测试方法（此处需注意用例方法提示错误则可能需要手动指定启动类（手动指定了启动类之后则不用单独启动指定的启动类，单元测试会自动装配））
 ![image](https://github.com/user-attachments/assets/f4343c14-1977-46e2-a96a-b9b1c8c3a766)
-
+#### 优化解决粘包半包问题
+使用netty中的LengthFieldBasedFrameDecoder解码器来解决粘包半包问题
 
 
 
