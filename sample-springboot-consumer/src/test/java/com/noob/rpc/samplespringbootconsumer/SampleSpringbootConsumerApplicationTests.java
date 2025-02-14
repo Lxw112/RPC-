@@ -15,4 +15,8 @@ class SampleSpringbootConsumerApplicationTests {
         userService.getName();
     }
 
+    @Test
+    void test1(){
+        userService.getName();
+    }
 }

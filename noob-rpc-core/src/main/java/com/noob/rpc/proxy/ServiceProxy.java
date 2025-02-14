@@ -64,7 +64,8 @@ public class ServiceProxy implements InvocationHandler {
         ProtocolMessage.Header header = new ProtocolMessage.Header();
         header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
         header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
-        header.setSerializer((byte) ProtocolMessageSerializerEnum.JDK.getKey());
+        //header.setSerializer((byte) ProtocolMessageSerializerEnum.JDK.getKey());
+        header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(RpcApplication.getRpcConfig().getSerializer()).getKey());
         header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
         header.setRequestId(IdUtil.getSnowflakeNextId());
         header.setStatus((byte) ProtocolMessageStatusEnum.OK.getValue());

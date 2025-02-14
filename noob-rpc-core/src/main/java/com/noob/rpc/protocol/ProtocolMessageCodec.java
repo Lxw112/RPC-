@@ -22,13 +22,6 @@ public class ProtocolMessageCodec extends ByteToMessageCodec<ProtocolMessage<?>>
             out.writeBytes(new byte[]{});
         }
         ProtocolMessage.Header header = msg.getHeader();
-        //依次向缓冲区写入字节
-        out.writeByte(header.getMagic());
-        out.writeByte(header.getVersion());
-        out.writeByte(header.getSerializer());
-        out.writeByte(header.getType());
-        out.writeByte(header.getStatus());
-        out.writeLong(header.getRequestId());
         //获取序列化器
         ProtocolMessageSerializerEnum serializerEnum =
                 ProtocolMessageSerializerEnum.getEnumByKey(header.getSerializer());
@@ -37,6 +30,16 @@ public class ProtocolMessageCodec extends ByteToMessageCodec<ProtocolMessage<?>>
         }
         Serializer serializer = SerializerFactory.getInstance(serializerEnum.getValue());
         byte[] bodyBytes = serializer.serialize(msg.getBody());
+        //依次向缓冲区写入字节
+        //消息整体长度
+        int length = 13 + 4 + bodyBytes.length;
+        out.writeInt(length);
+        out.writeByte(header.getMagic());
+        out.writeByte(header.getVersion());
+        out.writeByte(header.getSerializer());
+        out.writeByte(header.getType());
+        out.writeByte(header.getStatus());
+        out.writeLong(header.getRequestId());
         //写入body长度和数据
         out.writeInt(bodyBytes.length);
         out.writeBytes(bodyBytes);

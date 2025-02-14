@@ -12,6 +12,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,8 @@ public class NettyTcpServer {
                                       protected void initChannel(SocketChannel ch) throws Exception {
                                           // 管道配置：添加 HTTP 编解码器和处理请求的自定义处理器
                                           ChannelPipeline pipeline = ch.pipeline();
-                                          ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
+                                          pipeline.addLast(new LengthFieldBasedFrameDecoder(1024,0,4,0,4));
+                                          pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
                                           pipeline.addLast(new ProtocolMessageCodec()); // 编解码器
                                           pipeline.addLast(new TcpRequestServerHandler());
                                       }

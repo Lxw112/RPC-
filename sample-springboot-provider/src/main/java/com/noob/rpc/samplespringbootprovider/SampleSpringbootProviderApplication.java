@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @EnableRpc
 @SpringBootApplication
 public class SampleSpringbootProviderApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(SampleSpringbootProviderApplication.class, args);
     }
