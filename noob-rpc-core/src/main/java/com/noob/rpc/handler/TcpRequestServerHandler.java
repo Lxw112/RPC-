@@ -38,7 +38,8 @@ public class TcpRequestServerHandler extends SimpleChannelInboundHandler<Protoco
         header.setRequestId(protocolMessage.getHeader().getRequestId());
         header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
         header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
-        header.setSerializer((byte) ProtocolMessageSerializerEnum.JDK.getKey());
+        //这里header中本来就在解码时设置了序列化器，没必要再设置
+        //header.setSerializer((byte) ProtocolMessageSerializerEnum.JDK.getKey());
         ProtocolMessage<RpcResponse> responseProtocolMessage = new ProtocolMessage<>(header, rpcResponse);
         System.out.println("--------------------准备发送响应");
         ctx.writeAndFlush(responseProtocolMessage);
